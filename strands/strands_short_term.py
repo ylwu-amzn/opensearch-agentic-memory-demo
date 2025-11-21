@@ -32,7 +32,9 @@ print(f"OpenSearch Agentic Memory Demo - Session: {session_id}")
 print("Type 'q' or 'quit' to end the conversation\n")
 
 while True:
-    question = input("You: ").strip()
+    question = input("👤 You: ").strip()
+    
+    print(f"🤖 Assistant: ", end='') 
     
     if question.lower() in ['q', 'quit']:
         print("Goodbye!")
@@ -41,8 +43,5 @@ while True:
     if not question:
         continue
     
-    # Suppress Agent's internal printing
-    with redirect_stdout(StringIO()):
-        response = agent(question)
-    print(f"Assistant: {response}")
-    print()
+    response = agent(question)
+    print("\n")

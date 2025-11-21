@@ -1,1 +1,3 @@
 strands-agents
+requests
+rich
