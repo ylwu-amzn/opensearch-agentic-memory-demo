@@ -18,9 +18,9 @@ llm_id = os.getenv('LLM_MODEL_ID')
 
 # Memory and session configuration
 memory_container_name = os.getenv('MEMORY_CONTAINER_NAME', 'strands_long_term')
-session_id = os.getenv('SESSION_ID', 'demo_long_term_session')
-user_id = os.getenv('USER_ID', 'demo_user')
-agent_id = os.getenv('AGENT_ID', 'demo_agent')
+session_id = os.getenv('SESSION_ID', 'strands_long_term_session')
+user_id = os.getenv('USER_ID', 'strands_user')
+agent_id = os.getenv('AGENT_ID', 'strands_agent')
 
 # Initialize the tool provider
 provider = OpenSearchMemoryToolProvider(

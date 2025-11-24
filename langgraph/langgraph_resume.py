@@ -90,7 +90,7 @@ def resume_existing_thread(container_id: str, thread_id: str):
         messages = state.values.get("messages", [])
         print("\nConversation history:")
         for i, msg in enumerate(messages):
-            role = "User" if msg.__class__.__name__ == "HumanMessage" else "AI"
+            role = "👤 You" if msg.__class__.__name__ == "HumanMessage" else "🤖 Assistant"
             content = msg.content[:80] + "..." if len(msg.content) > 80 else msg.content
             print(f"  [{i+1}] {role}: {content}")
     

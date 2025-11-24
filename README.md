@@ -31,7 +31,7 @@ export OPENSEARCH_PASSWORD=<your_opensearch_domain_password>
 # Memory and session configuration (Optional)
 export MEMORY_CONTAINER_NAME=<your_memory_container_name>               # Defaults to 'strands_short_term'
 export MEMORY_CONTAINER_DESCRIPTION=<your_memory_container_description> # Defaults to 'OpenSearch Strands demo memory container'
-export SESSION_ID=<your_session_id>                                     # Defaults to 'demo_short_term_session'
+export SESSION_ID=<your_session_id>                                     # Defaults to 'strands_short_term_session'
 ```
 
 2. Set AWS credentials for Amazon Bedrock model
@@ -85,9 +85,9 @@ export LLM_MODEL_ID=<your_llm_model_id>                    # Default to Amazon B
 
 # Memory and session configuration (Optional)
 export MEMORY_CONTAINER_NAME=<your_memory_container_name>  # Defaults to 'strands_long_term'
-export SESSION_ID=<your_session_id>                        # Defaults to 'demo_long_term_session'
-export USER_ID=<your_user_id>                              # Defaults to 'demo_user'
-export AGENT_ID=<your_agent_id>                            # Defaults to 'demo_agent'
+export SESSION_ID=<your_session_id>                        # Defaults to 'strands_long_term_session'
+export USER_ID=<your_user_id>                              # Defaults to 'strands_user'
+export AGENT_ID=<your_agent_id>                            # Defaults to 'strands_agent'
 
 # Tool configuration (Optional)
 export BYPASS_TOOL_CONSENT=<true/false>                    # Defaults to true
@@ -289,12 +289,12 @@ RESUMING EXISTING THREAD: demo_20251121_155903
 Messages found: 6
 
 Conversation history:
-  [1] User: My name is Sarah and I love to bake!
-  [2] AI: That's wonderful that you enjoy baking, Sarah! Baking can be such a creative and...
-  [3] User: I like to bake a pie
-  [4] AI: Ooh, pies are delicious! There are so many wonderful varieties of pies to bake. ...
-  [5] User: Do you know my name and hobby?
-  [6] AI: Yes, you mentioned that your name is Sarah and that you love to bake. Specifical...
+  [1] 👤 You: My name is Sarah and I love to bake!
+  [2] 🤖 Assistant: That's wonderful that you enjoy baking, Sarah! Baking can be such a creative and...
+  [3] 👤 You: I like to bake a pie
+  [4] 🤖 Assistant: Ooh, pies are delicious! There are so many wonderful varieties of pies to bake. ...
+  [5] 👤 You: Do you know my name and hobby?
+  [6] 🤖 Assistant: Yes, you mentioned that your name is Sarah and that you love to bake. Specifical...
 
 Continuing conversation at 2025-11-21 16:10:24.241492
 Type 'q' or 'quit' to end the conversation
@@ -313,4 +313,122 @@ You introduced yourself as Sarah and said you love to bake. When I asked about y
 Thread ID: demo_20251121_155903
 Total messages: 8
 Session ended: 2025-11-21 16:10:45.442957
+```
+
+## LangGraph (Long-term memory)
+
+1. Set environment variables
+
+```bash
+# OpenSearch domain configuration (Required)
+export OPENSEARCH_URL=<your_opensearch_cluster_endpoint>
+export OPENSEARCH_USERNAME=<your_opensearch_domain_username>
+export OPENSEARCH_PASSWORD=<your_opensearch_domain_password>
+export OPENSEARCH_VERIFY_SSL=<true/false>                 # Defaults to false
+
+# Model configuration (Optional - auto-created if not provided)
+export EMBEDDING_MODEL_ID=<your_embedding_model_id>        # Defaults to Amazon Titan Embedding model
+export LLM_MODEL_ID=<your_llm_model_id>                    # Default to Amazon Bedrock Claude model
+export BEDROCK_MODEL_ID=<your_bedrock_model_id>            # Defaults to 'anthropic.claude-3-sonnet-20240229-v1:0'
+
+# Memory and session configuration (Optional)
+export MEMORY_CONTAINER_NAME=<your_memory_container_name>  # Defaults to 'langgraph_long_term'
+export SESSION_ID=<your_session_id>                        # Defaults to 'langgraph_long_term_session'
+export USER_ID=<your_user_id>                              # Defaults to 'langgraph_user'
+export AGENT_ID=<your_agent_id>                            # Defaults to 'langgraph_agent'
+```
+
+2. Set AWS credentials for Amazon Bedrock model
+
+```bash
+export AWS_REGION=<your_aws_region>
+export AWS_ACCESS_KEY_ID=<your_aws_access_key>
+export AWS_SECRET_ACCESS_KEY=<your_aws_secret_key>
+export AWS_SESSION_TOKEN=<your_aws_session_token>
+```
+
+3. Run the script
+
+```bash
+python langgraph/langgraph_long_term.py
+```
+
+The script creates an interactive chat session with long-term memory capabilities. It maintains conversation context within sessions using OpenSearch checkpoints while also storing and retrieving important information across different sessions using semantic search-based long-term memory.
+
+- Enter your messages at the "You:" prompt
+- Type `q` or `quit` to exit
+
+**Example conversation:**
+
+```
+% python langgraph/langgraph_long_term.py
+Created embedding model with id '4qcHt5oB6Os6SYy-8A86'
+Created LLM model with id '5KcHt5oB6Os6SYy-8A_L'
+Created memory container with id '5acHt5oB6Os6SYy-8Q8X'
+
+1. Setting up OpenSearch checkpointer...
+✅ Use memory container with ID: 5acHt5oB6Os6SYy-8Q8X
+
+2. Creating chatbot...
+✅ Chatbot ready
+
+Starting new thread: demo_20251124_100223
+LangGraph Interactive Demo
+Type 'q' or 'quit' to end the conversation
+
+👤 You: Hello, my name is Saran and I love to bake!
+⚠️  No checkpoint found for thread_id=demo_20251124_100223, checkpoint_ns=, checkpoint_id=None
+🤖 Assistant: Hello Saran, it's great to meet a fellow baking enthusiast! Baking is such a wonderful hobby - there's nothing quite like the delicious aroma of freshly baked goods wafting through the kitchen. What are some of your favorite things to bake? I personally love making breads, cookies, and pies from scratch. The process of precisely measuring ingredients, kneading dough, and watching baked goods rise in the oven is so satisfying. Do you have any go-to recipes you'd recommend or baking tips to share?
+
+👤 You: I like to bake a pie
+🤖 Assistant: Wonderful, pies are such a classic baked good! There are so many delicious varieties to choose from - fruit pies, cream pies, savory pies. Do you have a favorite type of pie you enjoy baking? 
+
+Some tips for baking great pies:
+
+- Use cold ingredients for the crust - this helps create a flakier texture when baked.
+- Don't overwork the pie dough when mixing and rolling it out. Handling it too much can cause the dough to become tough.
+- For fruit pies, let the filling cool slightly before adding it to the unbaked crust so it doesn't make the bottom soggy.
+- Brush the top crust with an egg wash or milk before baking for a beautiful golden brown color.
+- Let pies cool completely on a wire rack before slicing to allow the filling to set properly.
+
+I'd love to hear about your favorite pie recipe and any special tips or techniques you use when baking pies! Swapping baking wisdom is half the fun for pie enthusiasts.
+
+👤 You: q
+🤖 Assistant: Goodbye!
+
+======================================================================
+
+📊 Session Summary:
+Thread ID: demo_20251124_100223
+Total messages: 4
+Session ended: 2025-11-24 10:03:03.623017
+
+# New session
+% python langgraph/langgraph_long_term.py
+Find memory container with id '5acHt5oB6Os6SYy-8Q8X' by name 'langgraph_long_term_demo'
+
+1. Setting up OpenSearch checkpointer...
+✅ Use memory container with ID: 5acHt5oB6Os6SYy-8Q8X
+
+2. Creating chatbot...
+✅ Chatbot ready
+
+Found existing thread: demo_20251124_100223
+Resume existing conversation? (y/n): y
+Resuming thread: demo_20251124_100223
+LangGraph Interactive Demo
+Type 'q' or 'quit' to end the conversation
+
+👤 You: Do you know my name and hobby?
+🤖 Assistant: Yes, you mentioned earlier that your name is Saran and that you love to bake.
+
+👤 You: q
+🤖 Assistant: Goodbye!
+
+======================================================================
+
+📊 Session Summary:
+Thread ID: demo_20251124_100223
+Total messages: 6
+Session ended: 2025-11-24 10:04:14.895861
 ```
