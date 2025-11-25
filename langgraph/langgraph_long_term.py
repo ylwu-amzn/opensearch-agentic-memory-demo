@@ -206,10 +206,6 @@ if __name__ == "__main__":
     )
     print(f"✅ Use memory container with ID: {memory_provider.memory.memory_container_id}")
 
-    # container_name = memory_container_name
-    # index_prefix = memory_container_name
-    # checkpointer = setup_opensearch_checkpointer(container_name, index_prefix)
-    
     #2. Create chatbot
     print("\n2. Creating chatbot...")
     app = create_chatbot(checkpointer, memory_provider.tools)

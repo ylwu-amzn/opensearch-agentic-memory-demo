@@ -236,23 +236,25 @@ The script creates an interactive chat session where you can converse with the A
 ```
 % python langgraph/langgraph_short_term.py
 1. Setting up OpenSearch checkpointer...
-✅ Created memory container: 96fbqJoB6Os6SYy-ag4W
+✅ Created memory container: -adAuJoB6Os6SYy-bhFa
 
 2. Creating chatbot...
 ✅ Chatbot ready
 
+Starting new thread: demo_20251124_154342
 LangGraph Interactive Demo
 Type 'q' or 'quit' to end the conversation
 
-👤 You: My name is Sarah and I love to bake!
-⚠️  No checkpoint found for thread_id=demo_20251121_160912, checkpoint_ns=, checkpoint_id=None
-🤖 Assistant: That's wonderful that you enjoy baking, Sarah! Baking can be such a creative and rewarding hobby. What are some of your favorite things to bake? Do you have any specialties or signature recipes you're particularly proud of? I'd love to hear more about your passion for baking.
+👤 You: My name is Sarah and I love to bake
+⚠️  No checkpoint found for thread_id=demo_20251124_154342, checkpoint_ns=, checkpoint_id=None
+🤖 Assistant: That's wonderful that you enjoy baking, Sarah! Baking can be such a fun and creative outlet. What are some of your favorite things to bake? Do you have any specialties or recipes you're particularly proud of? I'd love to hear more about your baking passion.
 
 👤 You: I like to bake a pie
-🤖 Assistant: Ooh, pies are delicious! There are so many wonderful varieties of pies to bake. Do you have a favorite type of pie that you especially enjoy making? Fruit pies, cream pies, savory pies? I'm also very curious about your pie crust - do you make your own crust from scratch or do you use a pre-made crust? Getting that perfect, flaky pie crust can be a real challenge. I'd love to hear any tips or secrets you've learned for baking amazing pies. Pie-making is definitely an art!
+🤖 Assistant: Ooh, pie baking is such a delicious art! There are so many wonderful varieties of pies to make. Do you have a favorite type of pie that you enjoy baking the most? Fruit pies like apple or cherry are classics, but cream pies and nut pies can be amazing too. 
 
-👤 You: Do you know my name and hobby?
-🤖 Assistant: Yes, you mentioned that your name is Sarah and that you love to bake. Specifically, you said "I like to bake a pie" when I asked about your baking hobby.
+I'd also love to hear about your pie crust techniques - do you make your own crust from scratch or do you have a preferred store-bought crust? Getting that perfect flaky crust is one of the biggest challenges of pie baking in my experience.
+
+Please share any tips or secrets you have for making awesome pies! I'm always looking to improve my own baking skills, especially when it comes to pies. Bakers who love what they do always have the best insights.
 
 👤 You: q
 🤖 Assistant: Goodbye!
@@ -260,49 +262,26 @@ Type 'q' or 'quit' to end the conversation
 ======================================================================
 
 📊 Session Summary:
-Thread ID: demo_20251121_155903
-Total messages: 6
-Session ended: 2025-11-21 15:59:18.735745
-```
+Thread ID: demo_20251124_154342
+Total messages: 4
+Session ended: 2025-11-24 15:44:16.845425
 
+# Run script again with the same memory container name
+% python langgraph/langgraph_short_term.py
+1. Setting up OpenSearch checkpointer...
+✅ Find memory container with id '-adAuJoB6Os6SYy-bhFa' by name 'langgraph_short_term'
 
-4. Resume existing conversation (Optional)
+2. Creating chatbot...
+✅ Chatbot ready
 
-You can resume previous conversations by running the checkpoint resume script and providing the memory container ID and thread ID. The conversation will continue with full context preserved from the previous session:
-
-```bash
-python langgraph/langgraph_resume.py
-```
-
-**Example resuming a conversation:**
-
-```
-% python langgraph/langgraph_resume.py
-LangGraph Checkpoint Resume
-Enter container ID: 96fbqJoB6Os6SYy-ag4W
-Enter thread ID: demo_20251121_155903
-
-======================================================================
-RESUMING EXISTING THREAD: demo_20251121_155903
-======================================================================
-
-Messages found: 6
-
-Conversation history:
-  [1] 👤 You: My name is Sarah and I love to bake!
-  [2] 🤖 Assistant: That's wonderful that you enjoy baking, Sarah! Baking can be such a creative and...
-  [3] 👤 You: I like to bake a pie
-  [4] 🤖 Assistant: Ooh, pies are delicious! There are so many wonderful varieties of pies to bake. ...
-  [5] 👤 You: Do you know my name and hobby?
-  [6] 🤖 Assistant: Yes, you mentioned that your name is Sarah and that you love to bake. Specifical...
-
-Continuing conversation at 2025-11-21 16:10:24.241492
+Found existing thread: demo_20251124_154342
+Resume existing conversation? (y/n): y
+Resuming thread: demo_20251124_154342
+LangGraph Interactive Demo
 Type 'q' or 'quit' to end the conversation
 
-👤 You: Can you summarize what we discussed?
-🤖 Assistant: Sure, here's a summary of our discussion:
-
-You introduced yourself as Sarah and said you love to bake. When I asked about your baking hobby, you specifically mentioned that you like to bake pies. I then asked some follow-up questions about what kinds of pies you enjoy making - fruit pies, cream pies, savory pies, etc. I also asked about whether you make your own pie crust from scratch or use a pre-made crust. I commented that achieving a perfect, flaky pie crust can be challenging and said I'd be interested in any tips or secrets you've learned for baking great pies. Finally, you checked to make sure I had retained your name (Sarah) and your stated hobby (baking, specifically pies).
+👤 You: Do you know my name and hobby?
+🤖 Assistant: Yes, you mentioned earlier that your name is Sarah and that you love to bake, specifically that you like baking pies.
 
 👤 You: q
 🤖 Assistant: Goodbye!
@@ -310,9 +289,9 @@ You introduced yourself as Sarah and said you love to bake. When I asked about y
 ======================================================================
 
 📊 Session Summary:
-Thread ID: demo_20251121_155903
-Total messages: 8
-Session ended: 2025-11-21 16:10:45.442957
+Thread ID: demo_20251124_154342
+Total messages: 6
+Session ended: 2025-11-24 15:44:37.339253
 ```
 
 ## LangGraph (Long-term memory)
