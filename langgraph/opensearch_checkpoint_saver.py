@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import base64
+import json
 import requests
 from collections.abc import AsyncIterator, Iterator, Sequence
 from typing import Any, cast
@@ -244,13 +245,20 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
         
         doc = hits[0]["_source"]
 
-        # Extract checkpoint data from structured_data
-        checkpoint_b64 = doc["structured_data"]["checkpoint"]
-        checkpoint_type = doc["structured_data"]["checkpoint_type"]
-        metadata_b64 = doc["structured_data"]["metadata"]
+        # Extract checkpoint data from binary_data
+        binary_data = doc["binary_data"]
         parent_checkpoint_id = doc["namespace"].get("parent_checkpoint_id")
 
-        # Decode base64 and deserialize (same as SqliteSaver)
+        # Decode base64 and parse JSON
+        decoded_json = base64.b64decode(binary_data).decode('utf-8')
+        data = json.loads(decoded_json)
+
+        # Extract checkpoint and metadata
+        checkpoint_b64 = data["checkpoint"]
+        checkpoint_type = data["checkpoint_type"]
+        metadata_b64 = data["metadata"]
+
+        # Decode base64 and deserialize
         checkpoint_bytes = base64.b64decode(checkpoint_b64)
         checkpoint = self.serde.loads_typed((checkpoint_type, checkpoint_bytes))
         
@@ -258,7 +266,6 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
         if metadata_bytes:
             try:
                 # Try direct JSON decode first
-                import json
                 decoded_metadata = json.loads(metadata_bytes.decode('utf-8'))
                 # Ensure required fields exist
                 if 'step' not in decoded_metadata:
@@ -335,11 +342,18 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
             writes_hits = writes_data.get("hits", {}).get("hits", [])
             pending_writes = []
             for w in writes_hits:
-                value_b64 = w["_source"]["structured_data"]["value"]
-                value_type = w["_source"]["structured_data"]["value_type"]
-                channel = w["_source"]["structured_data"]["channel"]
-                
-                # Decode base64 and deserialize (same as SqliteSaver)
+                binary_data = w["_source"]["binary_data"]
+
+                # Decode base64 and parse JSON
+                decoded_json = base64.b64decode(binary_data).decode('utf-8')
+                data = json.loads(decoded_json)
+
+                # Extract write data
+                channel = data["channel"]
+                value_b64 = data["value"]
+                value_type = data["value_type"]
+
+                # Decode base64 and deserialize
                 value_bytes = base64.b64decode(value_b64)
                 deserialized_value = self.serde.loads_typed((value_type, value_bytes))
                 
@@ -414,7 +428,7 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
         if filter:
             for key, value in filter.items():
                 must_clauses.append(
-                    {"term": {f"structured_data.metadata.{key}": value}}
+                    {"term": {f"metadata.{key}": value}}
                 )
 
         query = {
@@ -439,10 +453,17 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
 
         for hit in data.get("hits", {}).get("hits", []):
             doc = hit["_source"]
-            checkpoint_b64 = doc["structured_data"]["checkpoint"]
-            checkpoint_type = doc["structured_data"]["checkpoint_type"]
-            metadata_b64 = doc["structured_data"]["metadata"]
+            binary_data = doc["binary_data"]
             parent_checkpoint_id = doc["namespace"].get("parent_checkpoint_id")
+
+            # Decode base64 and parse JSON
+            decoded_json = base64.b64decode(binary_data).decode('utf-8')
+            checkpoint_data = json.loads(decoded_json)
+
+            # Extract checkpoint and metadata
+            checkpoint_b64 = checkpoint_data["checkpoint"]
+            checkpoint_type = checkpoint_data["checkpoint_type"]
+            metadata_b64 = checkpoint_data["metadata"]
 
             # Decode base64 and deserialize (same as SqliteSaver)
             checkpoint_bytes = base64.b64decode(checkpoint_b64)
@@ -494,10 +515,17 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
                 writes_hits = writes_data.get("hits", {}).get("hits", [])
                 pending_writes = []
                 for w in writes_hits:
-                    value_b64 = w["_source"]["structured_data"]["value"]
-                    value_type = w["_source"]["structured_data"]["value_type"]
-                    channel = w["_source"]["structured_data"]["channel"]
-                    
+                    binary_data = w["_source"]["binary_data"]
+
+                    # Decode base64 and parse JSON
+                    decoded_json = base64.b64decode(binary_data).decode('utf-8')
+                    write_data = json.loads(decoded_json)
+
+                    # Extract write data
+                    channel = write_data["channel"]
+                    value_b64 = write_data["value"]
+                    value_type = write_data["value_type"]
+
                     # Decode base64 and deserialize (same as SqliteSaver)
                     value_bytes = base64.b64decode(value_b64)
                     deserialized_value = self.serde.loads_typed((value_type, value_bytes))
@@ -568,19 +596,24 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
         # Convert bytes to base64 string for JSON transport
         checkpoint_b64 = base64.b64encode(serialized_checkpoint).decode('utf-8')
         metadata_b64 = base64.b64encode(serialized_metadata).decode('utf-8')
-        
+
+        # Create JSON structure and encode to binary_data
+        data = {
+            "checkpoint": checkpoint_b64,
+            "checkpoint_type": type_,
+            "metadata": metadata_b64,
+            "messages": messages,
+        }
+        encoded_json = json.dumps(data)
+        binary_data_b64 = base64.b64encode(encoded_json.encode('utf-8')).decode('utf-8')
+
         # Create working memory document with payload_type="data"
         # Use metadata.type="checkpoint" to distinguish from writes
         # checkpoint_id contains UUID v6 which is lexicographically sortable by timestamp
         memory_doc = {
             "payload_type": "data",
             "checkpoint_id": checkpoint["id"],  # UUID v6 with embedded timestamp
-            "structured_data": {
-                "checkpoint": checkpoint_b64,
-                "checkpoint_type": type_,
-                "metadata": metadata_b64,
-                "messages": messages,
-            },
+            "binary_data": binary_data_b64,
             "namespace": {
                 "thread_id": thread_id,
                 "checkpoint_ns": checkpoint_ns,
@@ -657,8 +690,17 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
             # Serialize (same as SqliteSaver)
             type_, serialized_value = self.serde.dumps_typed(value)
             
-            # Convert bytes to base64 string for JSON transport
+            # Convert bytes to base64 string
             value_b64 = base64.b64encode(serialized_value).decode('utf-8')
+
+            # Create JSON structure and encode to binary_data
+            data = {
+                "channel": channel,
+                "value": value_b64,
+                "value_type": type_,
+            }
+            encoded_json = json.dumps(data)
+            binary_data_b64 = base64.b64encode(encoded_json.encode('utf-8')).decode('utf-8')
 
             # Use WRITES_IDX_MAP for special write types (errors, interrupts, etc.)
             write_idx = WRITES_IDX_MAP.get(channel, idx)
@@ -666,11 +708,7 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
             write_doc = {
                 "payload_type": "data",
                 "checkpoint_id": checkpoint_id,  # UUID for identification
-                "structured_data": {
-                    "channel": channel,
-                    "value": value_b64,
-                    "value_type": type_,
-                },
+                "binary_data": binary_data_b64,
                 "namespace": {
                     "thread_id": thread_id,
                     "checkpoint_ns": checkpoint_ns,

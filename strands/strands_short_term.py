@@ -1,5 +1,9 @@
 import os
 import urllib3
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Suppress SSL warnings
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)

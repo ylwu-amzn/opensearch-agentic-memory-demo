@@ -1,11 +1,15 @@
 import os
 from datetime import datetime
+from dotenv import load_dotenv
 from langchain_aws import ChatBedrock
 from langchain_core.messages import HumanMessage, SystemMessage
 from langgraph.graph import StateGraph, MessagesState, START, END
 from langgraph.prebuilt import ToolNode
 from opensearch_checkpoint_saver import OpenSearchSaver
 from opensearch_memory_tool import OpenSearchMemoryToolProvider
+
+# Load environment variables
+load_dotenv('.env_longterm')
 
 # Suppress SSL warnings
 import urllib3

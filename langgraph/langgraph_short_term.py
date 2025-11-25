@@ -1,9 +1,13 @@
 import os
 from datetime import datetime
+from dotenv import load_dotenv
 from langchain_aws import ChatBedrock
 from langchain_core.messages import HumanMessage
 from langgraph.graph import StateGraph, MessagesState, START, END
 from opensearch_checkpoint_saver import OpenSearchSaver
+
+# Load environment variables
+load_dotenv()
 
 # Suppress SSL warnings
 import urllib3
