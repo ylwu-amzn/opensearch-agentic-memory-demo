@@ -255,22 +255,10 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
         checkpoint = self.serde.loads_typed((checkpoint_type, checkpoint_bytes))
         
         metadata_bytes = base64.b64decode(metadata_b64)
-        if metadata_bytes:
-            try:
-                # Try direct JSON decode first
-                import json
-                decoded_metadata = json.loads(metadata_bytes.decode('utf-8'))
-                # Ensure required fields exist
-                if 'step' not in decoded_metadata:
-                    decoded_metadata['step'] = 0
-                if 'source' not in decoded_metadata:
-                    decoded_metadata['source'] = 'unknown'
-                metadata = cast(CheckpointMetadata, decoded_metadata)
-            except Exception:
-                # Fallback to default metadata with required fields
-                metadata = cast(CheckpointMetadata, {'step': 0, 'source': 'unknown'})
-        else:
-            metadata = cast(CheckpointMetadata, {'step': 0, 'source': 'unknown'})
+        metadata = cast(
+            CheckpointMetadata,
+            self.jsonplus_serde.loads(metadata_bytes) if metadata_bytes else {}
+        )
 
         # Build config for this checkpoint
         checkpoint_config = {
@@ -338,11 +326,11 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
                 value_b64 = w["_source"]["structured_data"]["value"]
                 value_type = w["_source"]["structured_data"]["value_type"]
                 channel = w["_source"]["structured_data"]["channel"]
-                
+
                 # Decode base64 and deserialize (same as SqliteSaver)
                 value_bytes = base64.b64decode(value_b64)
                 deserialized_value = self.serde.loads_typed((value_type, value_bytes))
-                
+
                 pending_writes.append((
                     w["_source"]["namespace"]["task_id"],
                     channel,
@@ -447,11 +435,11 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
             # Decode base64 and deserialize (same as SqliteSaver)
             checkpoint_bytes = base64.b64decode(checkpoint_b64)
             checkpoint = self.serde.loads_typed((checkpoint_type, checkpoint_bytes))
-            
+
             metadata_bytes = base64.b64decode(metadata_b64)
             metadata = cast(
                 CheckpointMetadata,
-                self.jsonplus_serde.loads_typed(("json", metadata_bytes))[1] if metadata_bytes else {}
+                self.jsonplus_serde.loads(metadata_bytes) if metadata_bytes else {}
             )
 
             checkpoint_config = {
@@ -497,11 +485,11 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
                     value_b64 = w["_source"]["structured_data"]["value"]
                     value_type = w["_source"]["structured_data"]["value_type"]
                     channel = w["_source"]["structured_data"]["channel"]
-                    
+
                     # Decode base64 and deserialize (same as SqliteSaver)
                     value_bytes = base64.b64decode(value_b64)
                     deserialized_value = self.serde.loads_typed((value_type, value_bytes))
-                    
+
                     pending_writes.append((
                         w["_source"]["namespace"]["task_id"],
                         channel,
@@ -555,7 +543,7 @@ class OpenSearchSaver(BaseCheckpointSaver[str]):
 
         # Serialize checkpoint and metadata (same as SqliteSaver approach)
         type_, serialized_checkpoint = self.serde.dumps_typed(checkpoint)
-        metadata_type, serialized_metadata = self.jsonplus_serde.dumps_typed(
+        serialized_metadata = self.jsonplus_serde.dumps(
             get_checkpoint_metadata(config, metadata)
         )
 

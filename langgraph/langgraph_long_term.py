@@ -37,7 +37,7 @@ def create_chatbot(checkpointer, memory_tools):
     model = ChatBedrock(
         model_id=bedrock_model_id,
         region_name=aws_region,
-        model_kwargs={"temperature": 0.7, "max_tokens": 1024}
+        # model_kwargs={"temperature": 0.7, "max_tokens": 1024}
     )
     
     model_with_tools = model.bind_tools(memory_tools)
@@ -45,7 +45,7 @@ def create_chatbot(checkpointer, memory_tools):
     def chat_node(state: MessagesState):
         messages = state["messages"]
         if not any(isinstance(msg, SystemMessage) for msg in messages):
-            system_msg = SystemMessage(content="You are a helpful assistant with long-term memory capabilities. Always store it using the opensearch_memory tool so you can remember it in future conversations.")
+            system_msg = SystemMessage(content="You are a helpful assistant.")
             messages = [system_msg] + messages
         return {"messages": [model_with_tools.invoke(messages)]}
 
